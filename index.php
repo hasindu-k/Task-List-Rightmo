@@ -1,50 +1,7 @@
 <?php 
   include 'conn.php';
-
-  // Check if the form is submitted
-  if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    if (isset($_POST['addTask'])) {
-      
-      $title = $_POST['title'];
-      $priority = $_POST['selectedPriority'];
-      $date = date('Y-m-d'); // Current date in YYYY-MM-DD format
-
-    
-      $stmt = $conn->prepare("INSERT INTO task (title, priority, date) VALUES (?, ?, ?)");
-      $stmt->bind_param("sss", $title, $priority, $date);
-
-      // Execute the statement
-      if ($stmt->execute()) {
-          // echo "New task added successfully.";
-      } else {
-          echo "Error: " . $stmt->error;
-      }
-
-      // Close statement and connection
-      $stmt->close();
-
-    } elseif (isset($_POST['updateStatus'])) {
-      // Retrieve form data
-      $update_id = $_POST['status_update_id'];
-      $update_status = $_POST['updated_status'];
-    
-      $stmt = $conn->prepare("UPDATE task SET status = ? WHERE id = ?");
-      $stmt->bind_param("si", $update_status, $update_id);
-      if ($stmt->execute()) {
-        echo "Status updated successfully.";
-    } else {
-        echo "Error: " . $stmt->error;
-    }
-      $stmt->close();
-    }
-    
-}
-
-
-$sql = "SELECT id, title, priority, status FROM task";
-$result = $conn->query($sql);
-
-
+  $sql = "SELECT id, title, priority, status FROM task";
+  $result = $conn->query($sql);
 ?>
 
 <html lang="en">
@@ -74,37 +31,26 @@ $result = $conn->query($sql);
           if ($result->num_rows > 0) {
               while($row = $result->fetch_assoc()) {
                   $priority = $row["priority"];
-                  // Determine the class based on priority
                   switch ($priority) {
-                      // case 'High':
-                      //     $class = 'text-red-500';
-                      //     break;
-                      // case 'Medium':
-                      //     $class = 'text-yellow-500';
-                      //     break;
-                      // case 'Low':
-                      //     $class = 'text-green-500';
-                      //     break;
-                      // default:
-                      //     $class = 'bg-gray-200 text-black'; // Default case
-                      //     break;
-
-                          case 'High':
-                            $class = 'bg-red-500 text-white';
-                            break;
-                        case 'Medium':
-                            $class = 'bg-yellow-500 text-white';
-                            break;
-                        case 'Low':
-                            $class = 'bg-green-500 text-white';
-                            break;
-                        default:
-                            $class = 'bg-gray-200 text-black'; // Default case
-                            break;
+                      case 'High':
+                          $class = 'bg-red-500 text-white';
+                          break;
+                      case 'Medium':
+                          $class = 'bg-yellow-500 text-white';
+                          break;
+                      case 'Low':
+                          $class = 'bg-green-500 text-white';
+                          break;
+                      default:
+                          $class = 'bg-gray-200 text-black'; 
+                          break;
                   }
+                  $uniqueId = "status-list-" . $row["id"]; 
+                  $currentId = $row["id"];
+                  
                   echo "
                   <div class='task-container mb-4'>
-                <div class='single-task bg-white rounded-lg p-3 md:flex md:gap-16'>
+                  <div class='single-task bg-white rounded-lg p-3 md:flex md:gap-16'>
 
                   <div class='task-title mb-2 md:basis-1/3 '>
                     <h2 class='text-lg text-slate-400'>Task</h2>
@@ -117,19 +63,18 @@ $result = $conn->query($sql);
                   </div> 
 
                   <div class='task-status flex relative gap-5 mb-3 md:basis-1/3'>
-                    <button
-                      class='bg-slate-100 text-slate-400 font-bold py-1 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500' onclick='showList()'
-                    >
+                    <button class='bg-slate-100 text-slate-400 font-bold py-1 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500' onclick='showList(\"".$uniqueId."\")'>
                       ".$row["status"]."
                     </button>
-                    <div id='status-list' class='absolute hidden right-0 mt-2 w-48 p-3 bg-white border border-gray-200 rounded-lg shadow-lg z-10'>
-                      <form action='' method='post'>
+
+                    <div id='".$uniqueId."' class='absolute hidden right-0 mt-2 w-48 p-3 bg-white border border-gray-200 rounded-lg shadow-lg z-10'>
+                      <form action='update_status.php' method='post'>
                         <select name='updated_status' id='updated_status' class='bg-white border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'>
                           <option value='To Do'>To Do</option>
                           <option value='In Progress'>In Progress</option>
                           <option value='Done'>Done</option>
                         </select>
-                        <input type='text' name='status_update_id' value='".$row["id"]."'>
+                        <input type='text' name='status_update_id' value='".$currentId."'>
                         
                         <button
                           class='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline'
@@ -137,12 +82,14 @@ $result = $conn->query($sql);
                         >
                           Update Status
                         </button>
+                      </form>
                     </div>
-                    <img
-                      src='src/circle-dashed-svgrepo-com.svg'
-                      class='size-4 my-auto'
-                      alt=''
-                    />
+
+                    <img 
+                      src='src/" . 
+                      ($row["status"] == "To Do" ? 'circle-dashed-svgrepo-com.svg' : 
+                      ($row["status"] == "In Progress" ? 'shape-half-circle-svgrepo-com.svg' : 'circle-svgrepo-com.svg')) . 
+                      "' class='size-4 my-auto'/>
                   </div>
 
                   <div class='task-operation flex mb-2 gap-8 items-center md:basis-1/6'>
@@ -150,13 +97,13 @@ $result = $conn->query($sql);
                       src='src/edit.svg'
                       alt='edit task'
                       class='size-4'
-                      onclick='openUpdateModal(this)'
+                      onclick='openUpdateModal(".$row["id"].")'
                     />
                     <img
                       src='src/delete.svg'
                       alt='edit task'
                       class='size-4'
-                      onclick='openDeleteModal()'
+                      onclick='openDeleteModal(".$row["id"].")'
                     />
                   </div>
                 </div>
@@ -167,386 +114,14 @@ $result = $conn->query($sql);
               echo "No Tasks found";
           }
           $conn->close();
-        ?>
-
-        <!-- <div class="task-container mb-4 ">
-            <div class="single-task bg-white rounded-lg p-3 md:flex md:gap-16">
-  
-              <div class="task-title mb-2 md:basis-1/3 ">
-                <h2 class="text-lg text-slate-400">Task</h2>
-                <h2 class="text-xl font-semibold text-black-400">Task</h2>
-              </div>
-  
-              <div class="task-priority mb-2 md:basis-1/6">
-                <h2 class="text-lg text-slate-400">Priority</h2>
-                <h2 class="text-xl font-semibold text-black-400">Priority</h2>
-              </div>
-  
-              <div class="task-status flex gap-5 mb-3 md:basis-1/3">
-                <button
-                  class="bg-slate-100 text-slate-400 font-bold py-1 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  To Do
-                </button>
-                <img
-                  src="src/circle-dashed-svgrepo-com.svg"
-                  class="size-4 my-auto"
-                  alt=""
-                />
-              </div>
-  
-              <div class="task-operation flex mb-2 gap-8 items-center md:basis-1/6 ">
-                <img
-                  src="src/edit.svg"
-                  alt="edit task"
-                  class="size-4"
-                  onclick="openUpdateModal(this)"
-                />
-                <img
-                  src="src/delete.svg"
-                  alt="edit task"
-                  class="size-4"
-                  onclick="openDeleteModal()"
-                />
-              </div>
-            </div>
-          </div><div class="task-container mb-4 ">
-            <div class="single-task bg-white rounded-lg p-3 md:flex md:gap-16">
-  
-              <div class="task-title mb-2 md:basis-1/3 ">
-                <h2 class="text-lg text-slate-400">Task</h2>
-                <h2 class="text-xl font-semibold text-black-400">Task</h2>
-              </div>
-  
-              <div class="task-priority mb-2 md:basis-1/6">
-                <h2 class="text-lg text-slate-400">Priority</h2>
-                <h2 class="text-xl font-semibold text-black-400">Priority</h2>
-              </div>
-  
-              <div class="task-status flex gap-5 mb-3 md:basis-1/3">
-                <button
-                  class="bg-slate-100 text-slate-400 font-bold py-1 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  To Do
-                </button>
-                <img
-                  src="src/circle-dashed-svgrepo-com.svg"
-                  class="size-4 my-auto"
-                  alt=""
-                />
-              </div>
-  
-              <div class="task-operation flex mb-2 gap-8 items-center md:basis-1/6 ">
-                <img
-                  src="src/edit.svg"
-                  alt="edit task"
-                  class="size-4"
-                  onclick="openUpdateModal(this)"
-                />
-                <img
-                  src="src/delete.svg"
-                  alt="edit task"
-                  class="size-4"
-                  onclick="openDeleteModal()"
-                />
-              </div>
-            </div>
-          </div><div class="task-container mb-4 ">
-            <div class="single-task bg-white rounded-lg p-3 md:flex md:gap-16">
-  
-              <div class="task-title mb-2 md:basis-1/3 ">
-                <h2 class="text-lg text-slate-400">Task</h2>
-                <h2 class="text-xl font-semibold text-black-400">Task</h2>
-              </div>
-  
-              <div class="task-priority mb-2 md:basis-1/6">
-                <h2 class="text-lg text-slate-400">Priority</h2>
-                <h2 class="text-xl font-semibold text-black-400">Priority</h2>
-              </div>
-  
-              <div class="task-status flex gap-5 mb-3 md:basis-1/3">
-                <button
-                  class="bg-slate-100 text-slate-400 font-bold py-1 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  To Do
-                </button>
-                <img
-                  src="src/circle-dashed-svgrepo-com.svg"
-                  class="size-4 my-auto"
-                  alt=""
-                />
-              </div>
-  
-              <div class="task-operation flex mb-2 gap-8 items-center md:basis-1/6 ">
-                <img
-                  src="src/edit.svg"
-                  alt="edit task"
-                  class="size-4"
-                  onclick="openUpdateModal(this)"
-                />
-                <img
-                  src="src/delete.svg"
-                  alt="edit task"
-                  class="size-4"
-                  onclick="openDeleteModal()"
-                />
-              </div>
-            </div>
-          </div><div class="task-container mb-4 ">
-            <div class="single-task bg-white rounded-lg p-3 md:flex md:gap-16">
-  
-              <div class="task-title mb-2 md:basis-1/3 ">
-                <h2 class="text-lg text-slate-400">Task</h2>
-                <h2 class="text-xl font-semibold text-black-400">Task</h2>
-              </div>
-  
-              <div class="task-priority mb-2 md:basis-1/6">
-                <h2 class="text-lg text-slate-400">Priority</h2>
-                <h2 class="text-xl font-semibold text-black-400">Priority</h2>
-              </div>
-  
-              <div class="task-status flex gap-5 mb-3 md:basis-1/3">
-                <button
-                  class="bg-slate-100 text-slate-400 font-bold py-1 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  To Do
-                </button>
-                <img
-                  src="src/circle-dashed-svgrepo-com.svg"
-                  class="size-4 my-auto"
-                  alt=""
-                />
-              </div>
-  
-              <div class="task-operation flex mb-2 gap-8 items-center md:basis-1/6 ">
-                <img
-                  src="src/edit.svg"
-                  alt="edit task"
-                  class="size-4"
-                  onclick="openUpdateModal(this)"
-                />
-                <img
-                  src="src/delete.svg"
-                  alt="edit task"
-                  class="size-4"
-                  onclick="openDeleteModal()"
-                />
-              </div>
-            </div>
-          </div><div class="task-container mb-4 ">
-            <div class="single-task bg-white rounded-lg p-3 md:flex md:gap-16">
-  
-              <div class="task-title mb-2 md:basis-1/3 ">
-                <h2 class="text-lg text-slate-400">Task</h2>
-                <h2 class="text-xl font-semibold text-black-400">Task</h2>
-              </div>
-  
-              <div class="task-priority mb-2 md:basis-1/6">
-                <h2 class="text-lg text-slate-400">Priority</h2>
-                <h2 class="text-xl font-semibold text-black-400">Priority</h2>
-              </div>
-  
-              <div class="task-status flex gap-5 mb-3 md:basis-1/3">
-                <button
-                  class="bg-slate-100 text-slate-400 font-bold py-1 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  To Do
-                </button>
-                <img
-                  src="src/circle-dashed-svgrepo-com.svg"
-                  class="size-4 my-auto"
-                  alt=""
-                />
-              </div>
-  
-              <div class="task-operation flex mb-2 gap-8 items-center md:basis-1/6 ">
-                <img
-                  src="src/edit.svg"
-                  alt="edit task"
-                  class="size-4"
-                  onclick="openUpdateModal(this)"
-                />
-                <img
-                  src="src/delete.svg"
-                  alt="edit task"
-                  class="size-4"
-                  onclick="openDeleteModal()"
-                />
-              </div>
-            </div>
-          </div><div class="task-container mb-4 ">
-            <div class="single-task bg-white rounded-lg p-3 md:flex md:gap-16">
-  
-              <div class="task-title mb-2 md:basis-1/3 ">
-                <h2 class="text-lg text-slate-400">Task</h2>
-                <h2 class="text-xl font-semibold text-black-400">Task</h2>
-              </div>
-  
-              <div class="task-priority mb-2 md:basis-1/6">
-                <h2 class="text-lg text-slate-400">Priority</h2>
-                <h2 class="text-xl font-semibold text-black-400">Priority</h2>
-              </div>
-  
-              <div class="task-status flex gap-5 mb-3 md:basis-1/3">
-                <button
-                  class="bg-slate-100 text-slate-400 font-bold py-1 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  To Do
-                </button>
-                <img
-                  src="src/circle-dashed-svgrepo-com.svg"
-                  class="size-4 my-auto"
-                  alt=""
-                />
-              </div>
-  
-              <div class="task-operation flex mb-2 gap-8 items-center md:basis-1/6 ">
-                <img
-                  src="src/edit.svg"
-                  alt="edit task"
-                  class="size-4"
-                  onclick="openUpdateModal(this)"
-                />
-                <img
-                  src="src/delete.svg"
-                  alt="edit task"
-                  class="size-4"
-                  onclick="openDeleteModal()"
-                />
-              </div>
-            </div>
-          </div><div class="task-container mb-4 ">
-            <div class="single-task bg-white rounded-lg p-3 md:flex md:gap-16">
-  
-              <div class="task-title mb-2 md:basis-1/3 ">
-                <h2 class="text-lg text-slate-400">Task</h2>
-                <h2 class="text-xl font-semibold text-black-400">Task</h2>
-              </div>
-  
-              <div class="task-priority mb-2 md:basis-1/6">
-                <h2 class="text-lg text-slate-400">Priority</h2>
-                <h2 class="text-xl font-semibold text-black-400">Priority</h2>
-              </div>
-  
-              <div class="task-status flex gap-5 mb-3 md:basis-1/3">
-                <button
-                  class="bg-slate-100 text-slate-400 font-bold py-1 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  To Do
-                </button>
-                <img
-                  src="src/circle-dashed-svgrepo-com.svg"
-                  class="size-4 my-auto"
-                  alt=""
-                />
-              </div>
-  
-              <div class="task-operation flex mb-2 gap-8 items-center md:basis-1/6 ">
-                <img
-                  src="src/edit.svg"
-                  alt="edit task"
-                  class="size-4"
-                  onclick="openUpdateModal(this)"
-                />
-                <img
-                  src="src/delete.svg"
-                  alt="edit task"
-                  class="size-4"
-                  onclick="openDeleteModal()"
-                />
-              </div>
-            </div>
-          </div><div class="task-container mb-4 ">
-            <div class="single-task bg-white rounded-lg p-3 md:flex md:gap-16">
-  
-              <div class="task-title mb-2 md:basis-1/3 ">
-                <h2 class="text-lg text-slate-400">Task</h2>
-                <h2 class="text-xl font-semibold text-black-400">Task</h2>
-              </div>
-  
-              <div class="task-priority mb-2 md:basis-1/6">
-                <h2 class="text-lg text-slate-400">Priority</h2>
-                <h2 class="text-xl font-semibold text-black-400">Priority</h2>
-              </div>
-  
-              <div class="task-status flex gap-5 mb-3 md:basis-1/3">
-                <button
-                  class="bg-slate-100 text-slate-400 font-bold py-1 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  To Do
-                </button>
-                <img
-                  src="src/circle-dashed-svgrepo-com.svg"
-                  class="size-4 my-auto"
-                  alt=""
-                />
-              </div>
-  
-              <div class="task-operation flex mb-2 gap-8 items-center md:basis-1/6 ">
-                <img
-                  src="src/edit.svg"
-                  alt="edit task"
-                  class="size-4"
-                  onclick="openUpdateModal(this)"
-                />
-                <img
-                  src="src/delete.svg"
-                  alt="edit task"
-                  class="size-4"
-                  onclick="openDeleteModal()"
-                />
-              </div>
-            </div>
-          </div><div class="task-container mb-4 ">
-            <div class="single-task bg-white rounded-lg p-3 md:flex md:gap-16">
-  
-              <div class="task-title mb-2 md:basis-1/3 ">
-                <h2 class="text-lg text-slate-400">Task</h2>
-                <h2 class="text-xl font-semibold text-black-400">Task</h2>
-              </div>
-  
-              <div class="task-priority mb-2 md:basis-1/6">
-                <h2 class="text-lg text-slate-400">Priority</h2>
-                <h2 class="text-xl font-semibold text-black-400">Priority</h2>
-              </div>
-  
-              <div class="task-status flex gap-5 mb-3 md:basis-1/3">
-                <button
-                  class="bg-slate-100 text-slate-400 font-bold py-1 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  To Do
-                </button>
-                <img
-                  src="src/circle-dashed-svgrepo-com.svg"
-                  class="size-4 my-auto"
-                  alt=""
-                />
-              </div>
-  
-              <div class="task-operation flex mb-2 gap-8 items-center md:basis-1/6 ">
-                <img
-                  src="src/edit.svg"
-                  alt="edit task"
-                  class="size-4"
-                  onclick="openUpdateModal(this)"
-                />
-                <img
-                  src="src/delete.svg"
-                  alt="edit task"
-                  class="size-4"
-                  onclick="openDeleteModal()"
-                />
-              </div>
-            </div>
-          </div>
-      </div> -->
+        ?> 
     </div>
 
     <!-- Modal -->
     <div id="taskModal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
       <div class="bg-white rounded-lg p-6">
         <h2 class="text-2xl font-bold mb-4">Add New Task</h2>
-        <form action="" method="post">
+        <form action="addTask.php" method="post">
           <div class="mb-4">
             <label
               class="block text-gray-700 text-sm font-bold mb-2"
@@ -558,7 +133,7 @@ $result = $conn->query($sql);
               id="taskTitle"
               type="text"
               name="title"
-              placeholder="Task Title"
+              placeholder="Task Title" required
             />
           </div>
           <div class="mb-4">
@@ -594,7 +169,6 @@ $result = $conn->query($sql);
               type="hidden"
               id="selectedPriority"
               name="selectedPriority"
-              value=""
             />
           </div>
           <div class="flex items-center justify-between">
@@ -604,6 +178,7 @@ $result = $conn->query($sql);
             >
               Add Task
             </button>
+            
             <button
               class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               type="button"
@@ -631,6 +206,7 @@ $result = $conn->query($sql);
               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               id="updateTaskTitle"
               type="text"
+              value=""
               placeholder="Task Title"
             />
           </div>
@@ -691,10 +267,7 @@ $result = $conn->query($sql);
     </div>
 
     <!-- Delete Modal -->
-    <div
-      id="taskDeleteModal"
-      class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center"
-    >
+    <div id="taskDeleteModal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
       <div class="bg-white rounded-lg p-6">
         <h2 class="text-2xl font-bold mb-4">Delete Task</h2>
         <p class="mb-4">
@@ -702,6 +275,7 @@ $result = $conn->query($sql);
           undone.
         </p>
         <div class="flex items-center justify-between">
+          <form action="" method="post">
           <button
             class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
             type="button"
@@ -709,6 +283,7 @@ $result = $conn->query($sql);
           >
             Delete Task
           </button>
+          </form>
           <button
             class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
             type="button"
@@ -751,52 +326,67 @@ $result = $conn->query($sql);
           });
 
           // Add the appropriate 'bg-*' and 'text-white' classes to the clicked button
-          this.classList.add(
-            this.getAttribute("data-priority") === "High"
-              ? "bg-red-500"
-              : this.getAttribute("data-priority") === "Medium"
-              ? "bg-yellow-500"
-              : "bg-green-500",
+          this.classList.add(this.getAttribute("data-priority") === "High"
+              ? "bg-red-500": this.getAttribute("data-priority") === "Medium"
+              ? "bg-yellow-500": "bg-green-500",
             "text-white"
           );
 
           // Update the hidden input field with the clicked button's priority
-          document.getElementById("selectedPriority").value =
-            this.getAttribute("data-priority");
+          document.getElementById("selectedPriority").value =this.getAttribute("data-priority");
         });
       });
 
       function addTask() {
-        // Code to add the task goes here
         const taskTitle = document.getElementById("taskTitle").value;
         const taskPriority = document.getElementById("selectedPriority").value;
+
         console.log("Task Title:", taskTitle);
         console.log("Task Priority:", taskPriority);
-        // Close the modal after adding the task
         closeModal();
       }
+      function openUpdateModal(taskId) {
+        
+        fetch(`getTaskDetails.php?id=${taskId}`)
+          .then(response => response.json())
+          .then(data => {
+            document.getElementById('updateTaskTitle').value = data.title;
+            document.getElementById('updateSelectedPriority').value = data.priority;
 
-      function openUpdateModal(task) {
-        // Set the values of the form fields with the task data
-        document.getElementById("updateTaskTitle").value = task.title;
-        document.getElementById("updateSelectedPriority").value = task.priority;
+            document.querySelectorAll('.priority-button').forEach(button => {
+              if (button.dataset.priority === data.priority) {
+                button.classList.add('bg-' + getPriorityColor(data.priority), 'text-white');
+                button.classList.remove('bg-gray-200', 'text-' + getPriorityColor(data.priority));
+              } else {
+                button.classList.remove('bg-' + getPriorityColor(button.dataset.priority), 'text-white');
+                button.classList.add('bg-gray-200', 'text-' + getPriorityColor(button.dataset.priority));
+              }
+            });
 
-        // Highlight the button corresponding to the task's priority
-        document
-          .querySelectorAll("#updatePriorityButtons .priority-button")
-          .forEach((button) => {
-            button.classList.remove("bg-blue-500", "text-white");
-            if (button.getAttribute("data-priority") === task.priority) {
-              button.classList.add("bg-blue-500", "text-white");
-            }
-          });
+            document.getElementById('updateTaskForm').dataset.taskId = taskId;
 
-        // Show the modal
-        document.getElementById("taskUpdateModal").classList.remove("hidden");
+            document.getElementById('taskUpdateModal').classList.remove('hidden');
+          })
+          .catch(error => console.error('Error fetching task details:', error));
+      }
+
+      function getPriorityColor(priority) {
+        switch (priority) {
+          case 'High':
+            return 'red-500';
+          case 'Medium':
+            return 'yellow-500';
+          case 'Low':
+            return 'green-500';
+          default:
+            return 'gray-500';
+        }
       }
 
       function closeUpdateModal() {
-        // Hide the modal
+        document.getElementById('taskUpdateModal').classList.add('hidden');
+      }
+      function closeUpdateModal() {
         document.getElementById("taskUpdateModal").classList.add("hidden");
       }
 
@@ -804,56 +394,95 @@ $result = $conn->query($sql);
         .querySelectorAll("#updatePriorityButtons .priority-button")
         .forEach((button) => {
           button.addEventListener("click", function () {
-            // Remove the 'bg-blue-500' and 'text-white' classes from all buttons
             document
               .querySelectorAll("#updatePriorityButtons .priority-button")
               .forEach((btn) =>
                 btn.classList.remove("bg-blue-500", "text-white")
               );
 
-            // Add the 'bg-blue-500' and 'text-white' classes to the clicked button
             this.classList.add("bg-blue-500", "text-white");
 
-            // Update the hidden input field with the clicked button's priority
             document.getElementById("updateSelectedPriority").value =
               this.getAttribute("data-priority");
           });
         });
 
-      function updateTask() {
-        const title = document.getElementById("updateTaskTitle").value;
-        const priority = document.getElementById(
-          "updateSelectedPriority"
-        ).value;
+      // function updateTask() {
+      //   const title = document.getElementById("updateTaskTitle").value;
+      //   const priority = document.getElementById(
+      //     "updateSelectedPriority"
+      //   ).value;
         
-        closeModal();
-      }
+      //   closeModal();
+      // }
 
-      function openDeleteModal() {
-        // Show the delete modal
-        document.getElementById("taskDeleteModal").classList.remove("hidden");
-      }
+      function updateTask() {
+      const taskId = document.getElementById('updateTaskForm').dataset.taskId;
+      const title = document.getElementById('updateTaskTitle').value;
+      const priority = document.getElementById('updateSelectedPriority').value;
 
+      const formData = new FormData();
+      formData.append('id', taskId);
+      formData.append('title', title);
+      formData.append('priority', priority);
+
+      fetch('updateTask.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.text())
+      .then(data => {
+        console.log(data);
+        closeUpdateModal();
+        location.reload();
+      })
+      .catch(error => console.error('Error updating task:', error));
+    }
       function closeDeleteModal() {
-        // Hide the delete modal
         document.getElementById("taskDeleteModal").classList.add("hidden");
       }
 
-      function deleteTask() {
-        // Perform the delete operation here, such as sending the request to the server to delete the task
+      function openDeleteModal(taskId) {
+        
+        fetch(`getTaskDetails.php?id=${taskId}`)
+          .then(response => response.json())
+          .then(data => {
+            document.getElementById('updateTaskTitle').value = data.title;
+            document.getElementById('updateSelectedPriority').value = data.priority;
 
-        // Close the modal after deleting
+            document.querySelectorAll('.priority-button').forEach(button => {
+              if (button.dataset.priority === data.priority) {
+                button.classList.add('bg-' + getPriorityColor(data.priority), 'text-white');
+                button.classList.remove('bg-gray-200', 'text-' + getPriorityColor(data.priority));
+              } else {
+                button.classList.remove('bg-' + getPriorityColor(button.dataset.priority), 'text-white');
+                button.classList.add('bg-gray-200', 'text-' + getPriorityColor(button.dataset.priority));
+              }
+            });
+
+            document.getElementById('updateTaskForm').dataset.taskId = taskId;
+
+            document.getElementById("taskDeleteModal").classList.remove("hidden");
+          })
+          .catch(error => console.error('Error fetching task details:', error));
+      }
+      function deleteTask() {
+        console.log("Task deleted");
         closeDeleteModal();
       }
 
-      function showList() {
-          var statusList = document.getElementById('status-list');
-          if (statusList.classList.contains('hidden')) {
-              statusList.classList.remove('hidden');
-          } else {
-              statusList.classList.add('hidden');
-          }
-      }
+      function showList(uniqueId) {
+    document.querySelectorAll('.status-list').forEach(function(list) {
+        list.classList.add('hidden');
+    });
+
+    var statusList = document.getElementById(uniqueId);
+    if (statusList.classList.contains('hidden')) {
+        statusList.classList.remove('hidden');
+    } else {
+        statusList.classList.add('hidden');
+    }
+}
     </script>
   </body>
 </html>
