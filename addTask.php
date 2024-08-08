@@ -1,4 +1,6 @@
 <?php
+
+include 'conn.php';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST['addTask'])) {
       
@@ -23,6 +25,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       }
 
       $stmt->close();
+
+      header("Location: index.php");
 
     }
     

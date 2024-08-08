@@ -13,109 +13,125 @@
   </head>
   <body class="bg-gray-400 flex justify-center min-h-screen">
     <div class="main-container w-full px-4 my-3 flex-col h-fit lg:w-4/5">
-      <div class="title-container flex place-content-between mb-3 lg:mt-4">
-        <h1 class="text-3xl font-bold">Task List</h1>
-        <button
-          type="button"
-          onclick="openModal()"
-          class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <div class="add-button flex place-items-center">
-            <img src="src/add.svg" alt="task add button" class="size-4 pr-1" />
-            Add Task
-          </div>
-        </button>
+      <div class="title-container flex-col ">
+        <div class="top-title-container flex place-content-between mb-3 lg:mt-4">
+          <h1 class="text-3xl font-bold md:self-center">Task List</h1>
+          <div class="search-box bg-white mb-3 md:mt-2 py-2 px-3 rounded-lg hidden md:flex">
+          <input
+            id="searchTask"
+            type="text"
+            class="w-full py-2 px-3 text-gray-700 md:self-center leading-tight focus:outline-none focus:shadow-outline"
+            placeholder="Search Task"
+            onkeyup="filterTasks()"
+          />
+        </div>
+          <button
+            type="button"
+            onclick="openModal()"
+            class="bg-purple-500 hover:bg-purple-600 text-white font-bold md:self-center py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <div class="add-button flex place-items-center">
+              <img src="src/add.svg" alt="task add button" class="size-4 pr-1" />
+              Add Task
+            </div>
+          </button>
+        </div>
+        <div class="search-box bg-white mb-3 py-3 px-3 rounded-lg md:hidden">
+          <input
+            type="text"
+            class="w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            placeholder="Search Task"
+          />
+        </div>
       </div>
-      <div class="full-task-container ">
-        <?php
-          if ($result->num_rows > 0) {
-              while($row = $result->fetch_assoc()) {
-                  $priority = $row["priority"];
-                  switch ($priority) {
-                      case 'High':
-                          $class = 'bg-red-500 text-white';
-                          break;
-                      case 'Medium':
-                          $class = 'bg-yellow-500 text-white';
-                          break;
-                      case 'Low':
-                          $class = 'bg-green-500 text-white';
-                          break;
-                      default:
-                          $class = 'bg-gray-200 text-black'; 
-                          break;
-                  }
-                  $uniqueId = "status-list-" . $row["id"]; 
-                  $currentId = $row["id"];
-                  
-                  echo "
-                  <div class='task-container mb-4'>
-                  <div class='single-task bg-white rounded-lg p-3 md:flex md:gap-16'>
+      <div class="full-task-container">
+  <?php
+    if ($result->num_rows > 0) {
+        while($row = $result->fetch_assoc()) {
+            $priority = $row["priority"];
+            switch ($priority) {
+                case 'High':
+                    $class = 'bg-red-500 text-white';
+                    break;
+                case 'Medium':
+                    $class = 'bg-yellow-500 text-white';
+                    break;
+                case 'Low':
+                    $class = 'bg-green-500 text-white';
+                    break;
+                default:
+                    $class = 'bg-gray-200 text-black'; 
+                    break;
+            }
+            $uniqueId = "status-list-" . $row["id"]; 
+            $currentId = $row["id"];
+            
+            echo "
+            <div class='task-container mb-4'>
+              <div class='single-task bg-white rounded-lg p-3 md:flex md:gap-16' data-task-title='".$row["title"]."'>
 
-                  <div class='task-title mb-2 md:basis-1/3 '>
-                    <h2 class='text-lg text-slate-400'>Task</h2>
-                    <h2 class='text-xl font-semibold text-black-400'>".$row["title"]."</h2>
+                <div class='task-title mb-2 md:basis-1/3 '>
+                  <h2 class='text-lg text-slate-400'>Task</h2>
+                  <h2 class='text-xl font-semibold text-black-400'>".$row["title"]."</h2>
+                </div>
+
+                <div class='task-priority mb-2 md:basis-1/6'>
+                  <h2 class='text-lg text-slate-400'>Priority</h2>
+                  <h2 class='text-xl font-semibold ".$class."'>".$row["priority"]."</h2>
+                </div> 
+
+                <div class='task-status flex relative justify-between pr-32 mb-3 md:basis-1/3'>
+                  <button class='bg-slate-100 text-slate-400 font-bold py-1 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500' onclick='showList(\"".$uniqueId."\")'>
+                    ".$row["status"]."
+                  </button>
+
+                  <div id='".$uniqueId."' class='absolute hidden right-0 mt-2 w-48 p-3 bg-white border border-gray-200 rounded-lg shadow-lg z-10'>
+                    <form action='update_status.php' method='post'>
+                      <select name='updated_status' id='updated_status' class='bg-white border mb-3 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'>
+                        <option value='To Do'>To Do</option>
+                        <option value='In Progress'>In Progress</option>
+                        <option value='Done'>Done</option>
+                      </select>
+                      <input type='hidden' name='status_update_id' value='".$currentId."'>
+                      
+                      <button class='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='submit' name='updateStatus'>
+                        Update Status
+                      </button>
+                    </form>
                   </div>
 
-                  <div class='task-priority mb-2 md:basis-1/6'>
-                    <h2 class='text-lg text-slate-400'>Priority</h2>
-                    <h2 class='text-xl font-semibold <?php echo $class; ?> '>".$row["priority"]."</h2>
-                  </div> 
+                  <img 
+                    src='src/" . 
+                    ($row["status"] == "To Do" ? 'circle-dashed-svgrepo-com.svg' : 
+                    ($row["status"] == "In Progress" ? 'shape-half-circle-svgrepo-com.svg' : 'circle-svgrepo-com.svg')) . 
+                    "' class='size-4 my-auto'/>
+                </div>
 
-                  <div class='task-status flex relative gap-5 mb-3 md:basis-1/3'>
-                    <button class='bg-slate-100 text-slate-400 font-bold py-1 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500' onclick='showList(\"".$uniqueId."\")'>
-                      ".$row["status"]."
-                    </button>
-
-                    <div id='".$uniqueId."' class='absolute hidden right-0 mt-2 w-48 p-3 bg-white border border-gray-200 rounded-lg shadow-lg z-10'>
-                      <form action='update_status.php' method='post'>
-                        <select name='updated_status' id='updated_status' class='bg-white border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'>
-                          <option value='To Do'>To Do</option>
-                          <option value='In Progress'>In Progress</option>
-                          <option value='Done'>Done</option>
-                        </select>
-                        <input type='text' name='status_update_id' value='".$currentId."'>
-                        
-                        <button
-                          class='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline'
-                          type='submit' name='updateStatus'
-                        >
-                          Update Status
-                        </button>
-                      </form>
-                    </div>
-
-                    <img 
-                      src='src/" . 
-                      ($row["status"] == "To Do" ? 'circle-dashed-svgrepo-com.svg' : 
-                      ($row["status"] == "In Progress" ? 'shape-half-circle-svgrepo-com.svg' : 'circle-svgrepo-com.svg')) . 
-                      "' class='size-4 my-auto'/>
-                  </div>
-
-                  <div class='task-operation flex mb-2 gap-8 items-center md:basis-1/6'>
-                    <img
-                      src='src/edit.svg'
-                      alt='edit task'
-                      class='size-4'
-                      onclick='openUpdateModal(".$row["id"].")'
-                    />
-                    <img
-                      src='src/delete.svg'
-                      alt='edit task'
-                      class='size-4'
-                      onclick='openDeleteModal(".$row["id"].")'
-                    />
-                  </div>
+                <div class='task-operation flex mb-2 gap-8 items-center md:basis-1/6'>
+                  <img
+                    src='src/edit.svg'
+                    alt='edit task'
+                    class='size-6'
+                    onclick='openUpdateModal(".$row["id"].")'
+                  />
+                  <img
+                    src='src/delete.svg'
+                    alt='delete task'
+                    class='size-6'
+                    onclick='openDeleteModal(".$row["id"].")'
+                  />
                 </div>
               </div>
-        ";
-              }
-          } else {
-              echo "No Tasks found";
-          }
-          $conn->close();
-        ?> 
-    </div>
+            </div>
+            ";
+        }
+    } else {
+        echo "No Tasks found";
+    }
+    $conn->close();
+  ?> 
+</div>
+
 
     <!-- Modal -->
     <div id="taskModal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
@@ -275,23 +291,23 @@
           undone.
         </p>
         <div class="flex items-center justify-between">
-          <form action="" method="post">
-          <button
-            class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            type="button"
-            onclick="deleteTask()"
-          >
-            Delete Task
-          </button>
-          </form>
-          <button
-            class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            type="button"
-            onclick="closeDeleteModal()"
-          >
-            Cancel
-          </button>
-        </div>
+      <form id="deleteTaskForm" method="post">
+        <input type="hidden" id="taskIdToDelete" name="task_id" value="">
+        <button
+          class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          type="submit"
+        >
+          Delete Task
+        </button>
+      </form>
+      <button
+        class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+        type="button"
+        onclick="closeDeleteModal()"
+      >
+        Cancel
+      </button>
+    </div>
       </div>
     </div>
 
@@ -407,15 +423,6 @@
           });
         });
 
-      // function updateTask() {
-      //   const title = document.getElementById("updateTaskTitle").value;
-      //   const priority = document.getElementById(
-      //     "updateSelectedPriority"
-      //   ).value;
-        
-      //   closeModal();
-      // }
-
       function updateTask() {
       const taskId = document.getElementById('updateTaskForm').dataset.taskId;
       const title = document.getElementById('updateTaskTitle').value;
@@ -438,34 +445,7 @@
       })
       .catch(error => console.error('Error updating task:', error));
     }
-      function closeDeleteModal() {
-        document.getElementById("taskDeleteModal").classList.add("hidden");
-      }
-
-      function openDeleteModal(taskId) {
-        
-        fetch(`getTaskDetails.php?id=${taskId}`)
-          .then(response => response.json())
-          .then(data => {
-            document.getElementById('updateTaskTitle').value = data.title;
-            document.getElementById('updateSelectedPriority').value = data.priority;
-
-            document.querySelectorAll('.priority-button').forEach(button => {
-              if (button.dataset.priority === data.priority) {
-                button.classList.add('bg-' + getPriorityColor(data.priority), 'text-white');
-                button.classList.remove('bg-gray-200', 'text-' + getPriorityColor(data.priority));
-              } else {
-                button.classList.remove('bg-' + getPriorityColor(button.dataset.priority), 'text-white');
-                button.classList.add('bg-gray-200', 'text-' + getPriorityColor(button.dataset.priority));
-              }
-            });
-
-            document.getElementById('updateTaskForm').dataset.taskId = taskId;
-
-            document.getElementById("taskDeleteModal").classList.remove("hidden");
-          })
-          .catch(error => console.error('Error fetching task details:', error));
-      }
+      
       function deleteTask() {
         console.log("Task deleted");
         closeDeleteModal();
@@ -483,6 +463,56 @@
         statusList.classList.add('hidden');
     }
 }
+
+function openDeleteModal(taskId) {
+    document.getElementById('taskIdToDelete').value = taskId;
+    document.getElementById('taskDeleteModal').classList.remove('hidden');
+  }
+
+  function closeDeleteModal() {
+    document.getElementById('taskDeleteModal').classList.add('hidden');
+  }
+
+  document.getElementById('deleteTaskForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const taskId = document.getElementById('taskIdToDelete').value;
+    
+    fetch('delete_task.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: `task_id=${taskId}`,
+    })
+    .then(response => response.text())
+    .then(data => {
+      console.log(data);
+      if (data === 'success') {
+        closeDeleteModal();
+        location.reload();
+      } else {
+        console.error('Failed to delete task:', data);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+  });
+
+
+  function filterTasks() {
+    const searchTerm = document.getElementById('searchTask').value.toLowerCase();
+    const tasks = document.querySelectorAll('.single-task');
+
+    tasks.forEach(task => {
+      const taskTitle = task.getAttribute('data-task-title').toLowerCase();
+      if (taskTitle.includes(searchTerm)) {
+        task.style.display = '';
+      } else {
+        task.style.display = 'none';
+      }
+    });
+  }
     </script>
   </body>
 </html>
