@@ -11,7 +11,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <title>Task List</title>
   </head>
-  <body class="bg-gray-400 flex justify-center min-h-screen">
+  <body class="bg-purple-100 flex justify-center min-h-screen">
     <div class="main-container w-full px-4 my-3 flex-col h-fit lg:w-4/5">
       <div class="title-container flex-col ">
         <div class="top-title-container flex place-content-between mb-3 lg:mt-4">
@@ -36,101 +36,100 @@
             </div>
           </button>
         </div>
-        <div class="search-box bg-white mb-3 py-3 px-3 rounded-lg md:hidden">
-          <input
-            type="text"
-            class="w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            placeholder="Search Task"
-          />
+        <div class="search-box mb-3 py-3 px-3 rounded-lg md:hidden">
+          <input type="text" class="w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Search Task"/>
         </div>
       </div>
       <div class="full-task-container">
-  <?php
-    if ($result->num_rows > 0) {
-        while($row = $result->fetch_assoc()) {
-            $priority = $row["priority"];
-            switch ($priority) {
-                case 'High':
-                    $class = 'bg-red-500 text-white';
-                    break;
-                case 'Medium':
-                    $class = 'bg-yellow-500 text-white';
-                    break;
-                case 'Low':
-                    $class = 'bg-green-500 text-white';
-                    break;
-                default:
-                    $class = 'bg-gray-200 text-black'; 
-                    break;
-            }
-            $uniqueId = "status-list-" . $row["id"]; 
-            $currentId = $row["id"];
-            
-            echo "
-            <div class='task-container mb-4'>
-              <div class='single-task bg-white rounded-lg p-3 md:flex md:gap-16' data-task-title='".$row["title"]."'>
+        <?php
+          if ($result->num_rows > 0) {
+              while($row = $result->fetch_assoc()) {
+                  $priority = $row["priority"];
+                  switch ($priority) {
+                      case 'High':
+                          $class = 'bg-red-500 text-white';
+                          break;
+                      case 'Medium':
+                          $class = 'bg-yellow-500 text-white';
+                          break;
+                      case 'Low':
+                          $class = 'bg-green-500 text-white';
+                          break;
+                      default:
+                          $class = 'bg-gray-200 text-black'; 
+                          break;
+                  }
+                  $uniqueId = "status-list-" . $row["id"]; 
+                  $currentId = $row["id"];
+                  
+                  echo "
+                  <div class='task-container mb-4'>
+                    <div class='single-task bg-white rounded-lg p-3 md:flex md:gap-16' data-task-title='".$row["title"]."'>
 
-                <div class='task-title mb-2 md:basis-1/3 '>
-                  <h2 class='text-lg text-slate-400'>Task</h2>
-                  <h2 class='text-xl font-semibold text-black-400'>".$row["title"]."</h2>
-                </div>
+                      <div class='task-title mb-2 md:basis-1/3 '>
+                        <h2 class='text-lg text-slate-400'>Task</h2>
+                        <h2 class='text-xl font-semibold text-black-400'>".$row["title"]."</h2>
+                      </div>
 
-                <div class='task-priority mb-2 md:basis-1/6'>
-                  <h2 class='text-lg text-slate-400'>Priority</h2>
-                  <h2 class='text-xl font-semibold ".$class."'>".$row["priority"]."</h2>
-                </div> 
+                      <div class='task-priority mb-2 md:basis-1/6'>
+                        <h2 class='text-lg text-slate-400'>Priority</h2>
+                        <h2 class='text-xl font-semibold ".$class."'>".$row["priority"]."</h2>
+                      </div> 
 
-                <div class='task-status flex relative justify-between pr-32 mb-3 md:basis-1/3'>
-                  <button class='bg-slate-100 text-slate-400 font-bold py-1 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500' onclick='showList(\"".$uniqueId."\")'>
-                    ".$row["status"]."
-                  </button>
+                      <div class='task-status flex relative justify-between pr-32 mb-3 md:basis-1/3'>
+                        <button class='bg-slate-100 text-slate-400 font-bold py-1 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500' onclick='showList(\"".$uniqueId."\")'>
+                          ".$row["status"]."
+                        </button>
 
-                  <div id='".$uniqueId."' class='absolute hidden right-0 mt-2 w-48 p-3 bg-white border border-gray-200 rounded-lg shadow-lg z-10'>
-                    <form action='update_status.php' method='post'>
-                      <select name='updated_status' id='updated_status' class='bg-white border mb-3 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'>
-                        <option value='To Do'>To Do</option>
-                        <option value='In Progress'>In Progress</option>
-                        <option value='Done'>Done</option>
-                      </select>
-                      <input type='hidden' name='status_update_id' value='".$currentId."'>
-                      
-                      <button class='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='submit' name='updateStatus'>
-                        Update Status
-                      </button>
-                    </form>
+                        <div id='".$uniqueId."' class='absolute hidden right-0 mt-2 w-48 p-3 bg-white border border-gray-200 rounded-lg shadow-lg z-10'>
+                          <form action='update_status.php' method='post'>
+                            <select name='updated_status' id='updated_status' class='bg-white border mb-3 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'>
+                              <option value='To Do'>To Do</option>
+                              <option value='In Progress'>In Progress</option>
+                              <option value='Done'>Done</option>
+                            </select>
+                            <input type='hidden' name='status_update_id' value='".$currentId."'>
+                            
+                            <button class='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='submit' name='updateStatus'>
+                              Update Status
+                            </button>
+                          </form>
+                        </div>
+
+                        <img 
+                          src='src/" . 
+                          ($row["status"] == "To Do" ? 'circle-dashed-svgrepo-com.svg' : 
+                          ($row["status"] == "In Progress" ? 'shape-half-circle-svgrepo-com.svg' : 'circle-svgrepo-com.svg')) . 
+                          "' class='size-4 my-auto'/>
+                      </div>
+
+                      <div class='task-operation flex mb-2 gap-8 items-center md:basis-1/6'>
+                        <img
+                          src='src/edit.svg'
+                          alt='edit task'
+                          class='size-6'
+                          onclick='openUpdateModal(".$row["id"].")'
+                        />
+                        <img
+                          src='src/delete.svg'
+                          alt='delete task'
+                          class='size-6'
+                          onclick='openDeleteModal(".$row["id"].")'
+                        />
+                      </div>
+                    </div>
                   </div>
-
-                  <img 
-                    src='src/" . 
-                    ($row["status"] == "To Do" ? 'circle-dashed-svgrepo-com.svg' : 
-                    ($row["status"] == "In Progress" ? 'shape-half-circle-svgrepo-com.svg' : 'circle-svgrepo-com.svg')) . 
-                    "' class='size-4 my-auto'/>
-                </div>
-
-                <div class='task-operation flex mb-2 gap-8 items-center md:basis-1/6'>
-                  <img
-                    src='src/edit.svg'
-                    alt='edit task'
-                    class='size-6'
-                    onclick='openUpdateModal(".$row["id"].")'
-                  />
-                  <img
-                    src='src/delete.svg'
-                    alt='delete task'
-                    class='size-6'
-                    onclick='openDeleteModal(".$row["id"].")'
-                  />
-                </div>
-              </div>
-            </div>
-            ";
-        }
-    } else {
-        echo "No Tasks found";
-    }
-    $conn->close();
-  ?> 
-</div>
+                  ";
+              }
+          } else {
+              echo "No Tasks found";
+          }
+          $conn->close();
+        ?> 
+      </div>
+      <div class="footer-container flex justify-center border-t-2 mt-16 pt-2">
+        <p class="text-gray-500 text-sm">Task List &copy; 2024 | <a href="https://hasindu-k.github.io/portfolio/">Hasindu Koshitha</a></p>
+      </div>
 
 
     <!-- Modal -->
@@ -308,8 +307,10 @@
         Cancel
       </button>
     </div>
-      </div>
+      </div>      
     </div>
+
+    
 
     <script>
       function openModal() {
@@ -513,6 +514,6 @@ function openDeleteModal(taskId) {
       }
     });
   }
-    </script>
+  </script>
   </body>
 </html>
