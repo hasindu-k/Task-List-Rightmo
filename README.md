@@ -82,7 +82,7 @@ This repository contains the Task List application developed as part of the deve
 
 You can view and interact with the application live at <a href="http://taskapp.infinityfreeapp.com/">Task-List-Rightmo.</a>
 
-### File Structure
+## File Structure
 
 6. **File Structure**:
    ```bash
