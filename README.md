@@ -59,7 +59,7 @@ This repository contains the Task List application developed as part of the deve
 - If using a local server (like XAMPP or WAMP), move the project folder to the `htdocs` directory and start your server.
 - Access the application in your web browser at `http://localhost/Task-List-Rightmo`.
 
-4. **Usage**:
+## **Usage**:
 
 ### Adding a Task:
 
@@ -81,6 +81,8 @@ This repository contains the Task List application developed as part of the deve
 ## Live Demo
 
 You can view and interact with the application live at <a href="http://taskapp.infinityfreeapp.com/">Task-List-Rightmo.</a>
+
+### File Structure
 
 6. **File Structure**:
    ```bash
