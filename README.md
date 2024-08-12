@@ -49,8 +49,6 @@ This repository contains the Task List application developed as part of the deve
    git clone https://github.com/your-username/Task-List-Rightmo.git
    cd Task-List-Rightmo
 
-   # Setup Instructions
-
 2. **Set up the database**:
 
 - Import the `tasks.sql` file into your MySQL database.
@@ -61,7 +59,7 @@ This repository contains the Task List application developed as part of the deve
 - If using a local server (like XAMPP or WAMP), move the project folder to the `htdocs` directory and start your server.
 - Access the application in your web browser at `http://localhost/Task-List-Rightmo`.
 
-## Usage
+4. **Usage**:
 
 ### Adding a Task:
 
@@ -84,16 +82,16 @@ This repository contains the Task List application developed as part of the deve
 
 You can view and interact with the application live at <a href="http://taskapp.infinityfreeapp.com/">Task-List-Rightmo.</a>
 
-## File Structure 
-
-Task-List-Rightmo/
-├── src/
-│   ├── css/                # Stylesheets
-│   ├── images/             # Images and icons
-├── conn.php                # Database configuration
-├── index.php               # Main application page
-├── tasks.sql               # Database schema
-├── README.md               # This README file
+6. **File Structure**:
+   ```bash
+   Task-List-Rightmo/
+      ├── src/
+      │   ├── css/                # Stylesheets
+      │   ├── images/             # Images and icons
+      ├── conn.php                # Database configuration
+      ├── index.php               # Main application page
+      ├── tasks.sql               # Database schema
+      ├── README.md               # This README file
 
 ## Contributing
 
